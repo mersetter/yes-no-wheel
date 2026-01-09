@@ -55,7 +55,7 @@ document.getElementById('clearHistory').addEventListener('click', () => {
 
 function renderHistory() {
     const list = document.getElementById('historyList');
-    list.innerHTML = history.slice(-20).reverse().map(h => 
+    list.innerHTML = history.slice(-20).reverse().map(h =>
         `<div class="history-item">${h.type}: <strong>${h.result}</strong> <small>(${new Date(h.time).toLocaleTimeString()})</small></div>`
     ).join('') || '<p>No history yet</p>';
 }
@@ -204,21 +204,73 @@ function randomPicker(displayId, resultId, getItems, btnId, prefix = '', suffix 
 // ========== WHEEL ==========
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
-const segments = ['YES', 'NO', 'YES', 'NO', 'YES', 'NO'];
-const colors = ['#4ade80', '#f87171', '#4ade80', '#f87171', '#4ade80', '#f87171'];
-const segmentAngle = (2 * Math.PI) / 6;
+const wheelInput = document.getElementById('wheelInput');
+const wheelList = document.getElementById('wheelList');
+
+let wheelSegments = JSON.parse(localStorage.getItem('wheelSegments') || '["YES", "NO", "MAYBE"]');
+const wheelColors = ['#ff6b6b', '#feca57', '#1dd1a1', '#54a0ff', '#5f27cd', '#ff9ff3', '#48dbfb', '#ff9f43'];
+
+function getWheelColor(index) {
+    return wheelColors[index % wheelColors.length];
+}
+
+function renderWheelList() {
+    wheelList.innerHTML = wheelSegments.map((s, i) =>
+        `<span class="custom-tag" data-index="${i}" style="border-left: 5px solid ${getWheelColor(i)}">${s} ✕</span>`
+    ).join('');
+    drawWheel();
+}
+
+wheelInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && wheelInput.value.trim()) {
+        wheelSegments.push(wheelInput.value.trim().toUpperCase());
+        localStorage.setItem('wheelSegments', JSON.stringify(wheelSegments));
+        wheelInput.value = '';
+        renderWheelList();
+    }
+});
+
+wheelList.addEventListener('click', e => {
+    if (e.target.classList.contains('custom-tag')) {
+        const index = parseInt(e.target.dataset.index);
+        wheelSegments.splice(index, 1);
+        localStorage.setItem('wheelSegments', JSON.stringify(wheelSegments));
+        renderWheelList();
+    }
+});
+
 let pointerRotation = 0, isSpinning = false;
 const centerX = 150, centerY = 150, radius = 140;
 let wheelResult = '';
 
 function drawWheel() {
     ctx.clearRect(0, 0, 300, 300);
-    for (let i = 0; i < 6; i++) {
+    const len = wheelSegments.length;
+
+    if (len === 0) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#2d3436';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = '20px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Add Options!', centerX, centerY);
+        return;
+    }
+
+    const segmentAngle = (2 * Math.PI) / len;
+
+    for (let i = 0; i < len; i++) {
         const startAngle = i * segmentAngle - Math.PI / 2;
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, startAngle + segmentAngle);
-        ctx.fillStyle = colors[i];
+        ctx.fillStyle = getWheelColor(i);
         ctx.fill();
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
@@ -226,21 +278,29 @@ function drawWheel() {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + segmentAngle / 2);
-        ctx.fillStyle = '#1a1a2e';
-        ctx.font = 'bold 20px Segoe UI';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Segoe UI';
         ctx.textAlign = 'right';
-        ctx.fillText(segments[i], radius - 20, 7);
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        const text = wheelSegments[i].length > 12 ? wheelSegments[i].substring(0, 10) + '..' : wheelSegments[i];
+        ctx.fillText(text, radius - 20, 5);
         ctx.restore();
     }
+
+    // Center and Pointer
     ctx.beginPath();
     ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
     ctx.fillStyle = '#1a1a2e';
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.stroke();
+
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(pointerRotation);
+
+    // Pointer Needle
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -(radius - 30));
@@ -248,25 +308,31 @@ function drawWheel() {
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.stroke();
+
+    // Pointer Arrow
     ctx.beginPath();
     ctx.moveTo(0, -(radius - 15));
     ctx.lineTo(-10, -(radius - 40));
     ctx.lineTo(10, -(radius - 40));
     ctx.fillStyle = '#fff';
     ctx.fill();
+
+    // Center Dot
     ctx.beginPath();
     ctx.arc(0, 0, 12, 0, 2 * Math.PI);
     ctx.fillStyle = '#667eea';
     ctx.fill();
+
     ctx.restore();
 }
 
 document.getElementById('spinBtn').addEventListener('click', () => {
-    if (isSpinning) return;
+    if (isSpinning || wheelSegments.length === 0) return;
     isSpinning = true;
     document.getElementById('spinBtn').disabled = true;
     document.getElementById('wheelResult').textContent = '';
     document.getElementById('wheelShare').classList.add('hidden');
+
     const spinAmount = (Math.random() * 3 + 3) * 2 * Math.PI + Math.random() * 2 * Math.PI;
     const duration = 4000 + Math.random() * 2000;
     const startTime = performance.now();
@@ -274,30 +340,83 @@ document.getElementById('spinBtn').addEventListener('click', () => {
 
     function animate(currentTime) {
         const progress = Math.min((currentTime - startTime) / duration, 1);
+        // Easing: easeOutCubic
         pointerRotation = startRotation + spinAmount * (1 - Math.pow(1 - progress, 3));
         drawWheel();
+
         if (progress < 1) {
-            if (Math.random() > 0.7) playSound(200, 0.02);
+            if (Math.random() > 0.8) playSound(200, 0.02);
             requestAnimationFrame(animate);
         } else {
             isSpinning = false;
             document.getElementById('spinBtn').disabled = false;
+
+            // Calculate Result
             let norm = pointerRotation % (2 * Math.PI);
             if (norm < 0) norm += 2 * Math.PI;
-            const result = segments[Math.floor(norm / segmentAngle) % 6];
+
+            const segmentAngle = (2 * Math.PI) / wheelSegments.length;
+            // The pointer is fixed at top (0 rotation relative to canvas if logic was simple, but drawing rotates pointer?)
+            // Wait, in my draw code: 
+            // ctx.rotate(pointerRotation); 
+            // ctx.lineTo(0, -(radius - 30)); // Points UP
+            // So if pointerRotation is 0, it points UP (-Y).
+            // Segments start at -PI/2 (UP).
+            // So segment 0 is centered at -PI/2 + segmentAngle/2.
+            // Actually, let's look at the logic.
+            // If pointer rotates +90deg (PI/2), it points RIGHT.
+            // The segments are static? NO.
+            // In my draw loop:
+            // ctx.arc(..., startAngle, ...);
+            // Segments are drawn statically starting from -PI/2 (Top).
+            // Pointer rotates.
+            // So if Pointer is at Angle A, we need to find which segment is at Angle A.
+            // Segment i covers [ -PI/2 + i*step, -PI/2 + (i+1)*step ]
+            // Normalized Pointer Angle needs to be mapped to this.
+            // Wait, standard math:
+            // Angle relative to -PI/2?
+            // Let's use a simpler logic used in previous calc:
+            // Math.floor(norm / segmentAngle)
+            // But previous code rotated the pointer.
+            // Logic: pointer is rotating clockwise.
+            // The segment it lands on is...
+            // Actually, it's easier to think: Pointer Angle % 2PI.
+            // Since 0 is UP (due to -radius y), and segments start at UP.
+            // Segment 0 is [0, step]. Segment 1 is [step, 2*step].
+            // BUT, `startAngle` in loop is `i * segmentAngle - Math.PI / 2`.
+            // So Segment 0 is from -PI/2 to -PI/2 + step.
+            // Pointer draws at `pointerRotation`.
+            // `ctx.lineTo(0, -(radius - 30))` -> this is vector (0, -y).
+            // With `rotate(pointerRotation)`, this vector rotates.
+            // At rotation 0, it is (0, -y) -> UP -> -PI/2.
+            // At rotation PI/2, it is (y, 0) -> RIGHT -> 0.
+            // So Pointer Angle in standard circle terms (0=Right) is `pointerRotation - PI/2`.
+            // But let's work in "Wheel Space" where 0 is UP.
+            // Segment 0 starts at 0 (UP).
+            // So we just need `norm` relative to UP.
+            // My `norm` is `pointerRotation % 2PI`.
+            // Since `pointerRotation` starts at 0 (UP).
+            // The index is `Math.floor(norm / segmentAngle)`.
+            // But we need to handle the wrapping carefully.
+
+            const index = Math.floor(norm / segmentAngle) % wheelSegments.length;
+            const result = wheelSegments[index];
+
             wheelResult = result;
             document.getElementById('wheelResult').textContent = result + '!';
-            document.getElementById('wheelResult').className = 'result ' + result.toLowerCase();
+            document.getElementById('wheelResult').className = 'result'; // Reset class
             addHistory('Wheel', result);
             vibrate([100, 50, 100]);
             playWinSound();
             launchConfetti();
+            document.getElementById('wheelResult').classList.add('yes'); // Default color
             document.getElementById('wheelShare').classList.remove('hidden');
         }
     }
     requestAnimationFrame(animate);
 });
-drawWheel();
+
+renderWheelList();
 setupShare('wheelShare', () => `🎡 The wheel says: ${wheelResult}!`);
 
 
@@ -321,10 +440,10 @@ flipBtn.addEventListener('click', () => {
         coin.classList.remove('flipping');
         coin.classList.add(isHeads ? 'show-heads' : 'show-tails');
         const side = isHeads ? 'HEADS' : 'TAILS';
-        const name = isHeads ? '🇷🇺 Vladimir Putin' : '🇺🇸 Donald Trump';
+        const name = isHeads ? 'Heads' : 'Tails';
         document.getElementById('coinResult').textContent = side + '!';
-        document.getElementById('coinName').textContent = name;
-        coinResultText = `🪙 ${side}! ${name}`;
+        document.getElementById('coinName').textContent = '';
+        coinResultText = `🪙 ${side}!`;
         addHistory('Coin', side);
         vibrate([50, 30, 50]);
         playWinSound();
@@ -341,7 +460,7 @@ const diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 randomPicker('diceDisplay', 'diceResult', () => diceEmojis, 'diceBtn', 'You rolled: ', '', 'Dice', 'diceShare');
 
 // ========== NUMBER ==========
-randomPicker('numberDisplay', 'numberResult', () => Array.from({length: 100}, (_, i) => i + 1), 'randomBtn', 'Your number: ', '', 'Number', 'numberShare');
+randomPicker('numberDisplay', 'numberResult', () => Array.from({ length: 100 }, (_, i) => i + 1), 'randomBtn', 'Your number: ', '', 'Number', 'numberShare');
 
 // ========== PERSON (Custom) ==========
 const personInput = document.getElementById('personInput');
