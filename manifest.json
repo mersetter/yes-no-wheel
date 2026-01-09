@@ -1,0 +1,17 @@
+{
+  "name": "Yes/No Decision Wheel",
+  "short_name": "YesNo Wheel",
+  "description": "Spin the wheel to make a decision!",
+  "start_url": "/yes-no-wheel/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

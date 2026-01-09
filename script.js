@@ -8,18 +8,19 @@ const colors = ['#4ade80', '#f87171', '#4ade80', '#f87171', '#4ade80', '#f87171'
 const numSegments = segments.length;
 const segmentAngle = (2 * Math.PI) / numSegments;
 
-let currentRotation = 0;
+let pointerRotation = 0;
 let isSpinning = false;
 
-function drawWheel() {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+const radius = Math.min(centerX, centerY) - 10;
 
+function drawWheel() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw wheel segments (static)
     for (let i = 0; i < numSegments; i++) {
-        const startAngle = currentRotation + i * segmentAngle;
+        const startAngle = i * segmentAngle - Math.PI / 2; // Start from top
         const endAngle = startAngle + segmentAngle;
 
         // Draw segment
@@ -46,14 +47,51 @@ function drawWheel() {
 
     // Draw center circle
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+    ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
     ctx.fillStyle = '#1a1a2e';
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 3;
     ctx.stroke();
+
+    // Draw pointer (like clock hand)
+    drawPointer();
 }
 
+function drawPointer() {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(pointerRotation);
+    
+    // Pointer line
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -(radius - 40));
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    
+    // Pointer arrow head
+    ctx.beginPath();
+    ctx.moveTo(0, -(radius - 20));
+    ctx.lineTo(-12, -(radius - 50));
+    ctx.lineTo(12, -(radius - 50));
+    ctx.closePath();
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, 0, 2 * Math.PI);
+    ctx.fillStyle = '#667eea';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    ctx.restore();
+}
 
 function spin() {
     if (isSpinning) return;
@@ -65,9 +103,9 @@ function spin() {
 
     // Random spin: 3-6 full rotations + random extra
     const spinAmount = (Math.random() * 3 + 3) * 2 * Math.PI + Math.random() * 2 * Math.PI;
-    const duration = 4000 + Math.random() * 2000; // 4-6 seconds
+    const duration = 4000 + Math.random() * 2000;
     const startTime = performance.now();
-    const startRotation = currentRotation;
+    const startRotation = pointerRotation;
 
     function animate(currentTime) {
         const elapsed = currentTime - startTime;
@@ -76,7 +114,7 @@ function spin() {
         // Easing function for natural slowdown
         const easeOut = 1 - Math.pow(1 - progress, 3);
         
-        currentRotation = startRotation + spinAmount * easeOut;
+        pointerRotation = startRotation + spinAmount * easeOut;
         drawWheel();
 
         if (progress < 1) {
@@ -93,13 +131,11 @@ function spin() {
 
 function showResult() {
     // Normalize rotation to 0-2π
-    let normalizedRotation = currentRotation % (2 * Math.PI);
+    let normalizedRotation = pointerRotation % (2 * Math.PI);
     if (normalizedRotation < 0) normalizedRotation += 2 * Math.PI;
 
-    // The pointer is at the top (270 degrees or -π/2)
-    // Calculate which segment is at the top
-    const pointerAngle = (3 * Math.PI / 2 - normalizedRotation + 2 * Math.PI) % (2 * Math.PI);
-    const segmentIndex = Math.floor(pointerAngle / segmentAngle) % numSegments;
+    // Calculate which segment the pointer is pointing at
+    const segmentIndex = Math.floor(normalizedRotation / segmentAngle) % numSegments;
     
     const result = segments[segmentIndex];
     resultDiv.textContent = result + '!';
