@@ -1,244 +1,197 @@
 // Tab switching
-const tabs = document.querySelectorAll('.tab');
-const sections = document.querySelectorAll('.section');
-
-tabs.forEach(tab => {
+document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        sections.forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.tab + '-section').classList.add('active');
     });
 });
 
+// Helper function for random picker
+function randomPicker(displayId, resultId, items, btnId, prefix = '', suffix = '') {
+    const display = document.getElementById(displayId);
+    const result = document.getElementById(resultId);
+    const btn = document.getElementById(btnId);
+    let isRunning = false;
+
+    btn.addEventListener('click', () => {
+        if (isRunning) return;
+        isRunning = true;
+        btn.disabled = true;
+        result.textContent = '';
+        display.classList.add('rolling');
+
+        let count = 0;
+        const interval = setInterval(() => {
+            display.textContent = items[Math.floor(Math.random() * items.length)];
+            count++;
+            if (count > 30) {
+                clearInterval(interval);
+                display.classList.remove('rolling');
+                const winner = items[Math.floor(Math.random() * items.length)];
+                display.textContent = winner;
+                result.textContent = prefix + winner + suffix;
+                isRunning = false;
+                btn.disabled = false;
+            }
+        }, 50);
+    });
+}
+
 // ========== WHEEL ==========
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
-const spinBtn = document.getElementById('spinBtn');
-const wheelResult = document.getElementById('wheelResult');
-
 const segments = ['YES', 'NO', 'YES', 'NO', 'YES', 'NO'];
 const colors = ['#4ade80', '#f87171', '#4ade80', '#f87171', '#4ade80', '#f87171'];
-const numSegments = segments.length;
-const segmentAngle = (2 * Math.PI) / numSegments;
-
-let pointerRotation = 0;
-let isSpinning = false;
-
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-const radius = Math.min(centerX, centerY) - 10;
+const segmentAngle = (2 * Math.PI) / 6;
+let pointerRotation = 0, isSpinning = false;
+const centerX = 150, centerY = 150, radius = 140;
 
 function drawWheel() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < numSegments; i++) {
+    ctx.clearRect(0, 0, 300, 300);
+    for (let i = 0; i < 6; i++) {
         const startAngle = i * segmentAngle - Math.PI / 2;
-        const endAngle = startAngle + segmentAngle;
-
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + segmentAngle);
         ctx.fillStyle = colors[i];
         ctx.fill();
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.stroke();
-
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + segmentAngle / 2);
-        ctx.textAlign = 'right';
         ctx.fillStyle = '#1a1a2e';
-        ctx.font = 'bold 28px Segoe UI';
-        ctx.fillText(segments[i], radius - 30, 10);
+        ctx.font = 'bold 20px Segoe UI';
+        ctx.textAlign = 'right';
+        ctx.fillText(segments[i], radius - 20, 7);
         ctx.restore();
     }
-
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+    ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
     ctx.fillStyle = '#1a1a2e';
     ctx.fill();
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
     ctx.stroke();
-
-    drawPointer();
-}
-
-function drawPointer() {
+    // Pointer
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(pointerRotation);
-    
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(0, -(radius - 40));
+    ctx.lineTo(0, -(radius - 30));
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.stroke();
-    
     ctx.beginPath();
-    ctx.moveTo(0, -(radius - 20));
-    ctx.lineTo(-12, -(radius - 50));
-    ctx.lineTo(12, -(radius - 50));
-    ctx.closePath();
+    ctx.moveTo(0, -(radius - 15));
+    ctx.lineTo(-10, -(radius - 40));
+    ctx.lineTo(10, -(radius - 40));
     ctx.fillStyle = '#fff';
     ctx.fill();
-    
     ctx.beginPath();
-    ctx.arc(0, 0, 15, 0, 2 * Math.PI);
+    ctx.arc(0, 0, 12, 0, 2 * Math.PI);
     ctx.fillStyle = '#667eea';
     ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
     ctx.restore();
 }
 
-function spin() {
+document.getElementById('spinBtn').addEventListener('click', () => {
     if (isSpinning) return;
     isSpinning = true;
-    spinBtn.disabled = true;
-    wheelResult.textContent = '';
-    wheelResult.className = 'result';
-
+    document.getElementById('spinBtn').disabled = true;
+    document.getElementById('wheelResult').textContent = '';
     const spinAmount = (Math.random() * 3 + 3) * 2 * Math.PI + Math.random() * 2 * Math.PI;
     const duration = 4000 + Math.random() * 2000;
     const startTime = performance.now();
     const startRotation = pointerRotation;
 
     function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        pointerRotation = startRotation + spinAmount * easeOut;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        pointerRotation = startRotation + spinAmount * (1 - Math.pow(1 - progress, 3));
         drawWheel();
-
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        } else {
+        if (progress < 1) requestAnimationFrame(animate);
+        else {
             isSpinning = false;
-            spinBtn.disabled = false;
-            showWheelResult();
+            document.getElementById('spinBtn').disabled = false;
+            let norm = pointerRotation % (2 * Math.PI);
+            if (norm < 0) norm += 2 * Math.PI;
+            const result = segments[Math.floor(norm / segmentAngle) % 6];
+            document.getElementById('wheelResult').textContent = result + '!';
+            document.getElementById('wheelResult').className = 'result ' + result.toLowerCase();
         }
     }
     requestAnimationFrame(animate);
-}
-
-function showWheelResult() {
-    let normalizedRotation = pointerRotation % (2 * Math.PI);
-    if (normalizedRotation < 0) normalizedRotation += 2 * Math.PI;
-    const segmentIndex = Math.floor(normalizedRotation / segmentAngle) % numSegments;
-    const result = segments[segmentIndex];
-    wheelResult.textContent = result + '!';
-    wheelResult.className = 'result ' + result.toLowerCase();
-}
-
+});
 drawWheel();
-spinBtn.addEventListener('click', spin);
+
 
 // ========== COIN ==========
 const coin = document.getElementById('coin');
 const flipBtn = document.getElementById('flipBtn');
-const coinResult = document.getElementById('coinResult');
-const coinName = document.getElementById('coinName');
 let isFlipping = false;
-
-function flip() {
+flipBtn.addEventListener('click', () => {
     if (isFlipping) return;
     isFlipping = true;
     flipBtn.disabled = true;
-    coinResult.textContent = '';
-    coinName.textContent = '';
-    
+    document.getElementById('coinResult').textContent = '';
+    document.getElementById('coinName').textContent = '';
     coin.classList.remove('show-heads', 'show-tails');
     coin.classList.add('flipping');
-    
     const isHeads = Math.random() < 0.5;
-    
     setTimeout(() => {
         coin.classList.remove('flipping');
         coin.classList.add(isHeads ? 'show-heads' : 'show-tails');
-        
-        if (isHeads) {
-            coinResult.textContent = 'HEADS!';
-            coinName.textContent = '🇷🇺 Vladimir Putin';
-        } else {
-            coinResult.textContent = 'TAILS!';
-            coinName.textContent = '🇺🇸 Donald Trump';
-        }
-        
+        document.getElementById('coinResult').textContent = isHeads ? 'HEADS!' : 'TAILS!';
+        document.getElementById('coinName').textContent = isHeads ? '🇷🇺 Vladimir Putin' : '🇺🇸 Donald Trump';
         isFlipping = false;
         flipBtn.disabled = false;
     }, 2000);
-}
+});
 
-flipBtn.addEventListener('click', flip);
+// ========== DICE ==========
+const diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+randomPicker('diceDisplay', 'diceResult', diceEmojis, 'diceBtn', 'You rolled: ');
 
 // ========== NUMBER ==========
-const numberDisplay = document.getElementById('numberDisplay');
-const randomBtn = document.getElementById('randomBtn');
-const numberResult = document.getElementById('numberResult');
-let isRolling = false;
-
-function generateNumber() {
-    if (isRolling) return;
-    isRolling = true;
-    randomBtn.disabled = true;
-    numberResult.textContent = '';
-    numberDisplay.classList.add('rolling');
-    
-    let count = 0;
-    const interval = setInterval(() => {
-        numberDisplay.textContent = Math.floor(Math.random() * 100) + 1;
-        count++;
-        if (count > 30) {
-            clearInterval(interval);
-            numberDisplay.classList.remove('rolling');
-            const finalNumber = Math.floor(Math.random() * 100) + 1;
-            numberDisplay.textContent = finalNumber;
-            numberResult.textContent = 'Your number: ' + finalNumber;
-            isRolling = false;
-            randomBtn.disabled = false;
-        }
-    }, 50);
-}
-
-randomBtn.addEventListener('click', generateNumber);
+randomPicker('numberDisplay', 'numberResult', Array.from({length: 100}, (_, i) => i + 1), 'randomBtn', 'Your number: ');
 
 // ========== PERSON ==========
-const people = ['RAY', 'STEVE', 'MARCEL'];
-const personDisplay = document.getElementById('personDisplay');
-const personBtn = document.getElementById('personBtn');
-const personResult = document.getElementById('personResult');
-let isPickingPerson = false;
+randomPicker('personDisplay', 'personResult', ['RAY', 'STEVE', 'MARCEL'], 'personBtn', '🎉 ', ' wins!');
 
-function pickPerson() {
-    if (isPickingPerson) return;
-    isPickingPerson = true;
-    personBtn.disabled = true;
-    personResult.textContent = '';
-    personDisplay.classList.add('rolling');
-    
-    let count = 0;
-    const interval = setInterval(() => {
-        personDisplay.textContent = people[Math.floor(Math.random() * people.length)];
-        count++;
-        if (count > 30) {
-            clearInterval(interval);
-            personDisplay.classList.remove('rolling');
-            const winner = people[Math.floor(Math.random() * people.length)];
-            personDisplay.textContent = winner;
-            personResult.textContent = '🎉 ' + winner + ' wins!';
-            isPickingPerson = false;
-            personBtn.disabled = false;
-        }
-    }, 50);
-}
+// ========== FOOD ==========
+randomPicker('foodDisplay', 'foodResult', ['🍕 Pizza', '🍔 Burger', '🍣 Sushi', '🌮 Tacos', '🥙 Döner', '🍜 Ramen', '🥗 Salad', '🍝 Pasta', '🍛 Curry', '🥡 Chinese'], 'foodBtn', "Let's eat: ");
 
-personBtn.addEventListener('click', pickPerson);
+// ========== MOVIE ==========
+randomPicker('movieDisplay', 'movieResult', ['🎬 Action', '😂 Comedy', '👻 Horror', '💕 Romance', '🚀 Sci-Fi', '🎭 Drama', '🔍 Thriller', '✨ Fantasy', '📖 Documentary', '🎨 Animation'], 'movieBtn', 'Watch: ');
+
+// ========== WHO PAYS ==========
+randomPicker('paysDisplay', 'paysResult', ['RAY', 'STEVE', 'MARCEL'], 'paysBtn', '💸 ', ' pays!');
+
+// ========== MUSIC ==========
+randomPicker('musicDisplay', 'musicResult', ['🎸 Rock', '🎹 Pop', '🎺 Jazz', '🎻 Classical', '🎤 Hip-Hop', '💃 Disco', '🤘 Metal', '🎧 Electronic', '🪕 Country', '🎷 R&B'], 'musicBtn', 'Listen to: ');
+
+// ========== DARE ==========
+const dares = [
+    'Do 10 pushups!', 'Sing a song!', 'Dance for 30 sec!', 'Tell a joke!', 
+    'Do an impression!', 'Speak in accent!', 'Hold a plank 30s!', 'Tell embarrassing story!',
+    'Do 20 jumping jacks!', 'Make animal sounds!'
+];
+randomPicker('dareDisplay', 'dareResult', dares, 'dareBtn', '💪 ');
+
+// ========== TRAVEL ==========
+randomPicker('travelDisplay', 'travelResult', ['🗼 Paris', '🗽 New York', '🏯 Tokyo', '🎡 London', '🏝️ Bali', '🦘 Sydney', '🏔️ Swiss Alps', '🌴 Hawaii', '🏰 Barcelona', '🎰 Las Vegas'], 'travelBtn', '✈️ Go to: ');
+
+// ========== GAME ==========
+randomPicker('gameDisplay', 'gameResult', ['♟️ Chess', '🎯 Darts', '🎱 Pool', '🃏 Poker', '🎳 Bowling', '🏓 Ping Pong', '🎮 Video Games', '🎲 Board Game', '⚽ Football', '🏀 Basketball'], 'gameBtn', "Let's play: ");
+
+// ========== MAGIC 8-BALL ==========
+const magic8Answers = [
+    'Yes!', 'No!', 'Maybe...', 'Definitely!', 'Ask again later', 'Absolutely not!',
+    'Signs point to yes', 'Very doubtful', 'Without a doubt', 'Cannot predict now',
+    'Most likely', 'Don\'t count on it', 'Yes, in due time', 'Outlook not so good'
+];
+randomPicker('magic8Display', 'magic8Result', magic8Answers, 'magic8Btn', '🔮 ');
