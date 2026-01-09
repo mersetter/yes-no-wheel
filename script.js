@@ -179,3 +179,34 @@ function flip() {
 }
 
 flipBtn.addEventListener('click', flip);
+
+// ========== NUMBER ==========
+const numberDisplay = document.getElementById('numberDisplay');
+const randomBtn = document.getElementById('randomBtn');
+const numberResult = document.getElementById('numberResult');
+let isRolling = false;
+
+function generateNumber() {
+    if (isRolling) return;
+    isRolling = true;
+    randomBtn.disabled = true;
+    numberResult.textContent = '';
+    numberDisplay.classList.add('rolling');
+    
+    let count = 0;
+    const interval = setInterval(() => {
+        numberDisplay.textContent = Math.floor(Math.random() * 100) + 1;
+        count++;
+        if (count > 30) {
+            clearInterval(interval);
+            numberDisplay.classList.remove('rolling');
+            const finalNumber = Math.floor(Math.random() * 100) + 1;
+            numberDisplay.textContent = finalNumber;
+            numberResult.textContent = 'Your number: ' + finalNumber;
+            isRolling = false;
+            randomBtn.disabled = false;
+        }
+    }, 50);
+}
+
+randomBtn.addEventListener('click', generateNumber);
