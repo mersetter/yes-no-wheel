@@ -210,3 +210,35 @@ function generateNumber() {
 }
 
 randomBtn.addEventListener('click', generateNumber);
+
+// ========== PERSON ==========
+const people = ['RAY', 'STEVE', 'MARCEL'];
+const personDisplay = document.getElementById('personDisplay');
+const personBtn = document.getElementById('personBtn');
+const personResult = document.getElementById('personResult');
+let isPickingPerson = false;
+
+function pickPerson() {
+    if (isPickingPerson) return;
+    isPickingPerson = true;
+    personBtn.disabled = true;
+    personResult.textContent = '';
+    personDisplay.classList.add('rolling');
+    
+    let count = 0;
+    const interval = setInterval(() => {
+        personDisplay.textContent = people[Math.floor(Math.random() * people.length)];
+        count++;
+        if (count > 30) {
+            clearInterval(interval);
+            personDisplay.classList.remove('rolling');
+            const winner = people[Math.floor(Math.random() * people.length)];
+            personDisplay.textContent = winner;
+            personResult.textContent = '🎉 ' + winner + ' wins!';
+            isPickingPerson = false;
+            personBtn.disabled = false;
+        }
+    }, 50);
+}
+
+personBtn.addEventListener('click', pickPerson);
