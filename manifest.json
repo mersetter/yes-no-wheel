@@ -10,6 +10,26 @@
   "background_color": "#1a1a2e",
   "theme_color": "#667eea",
   "categories": ["entertainment", "games", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Spin Wheel",
+      "short_name": "Wheel",
+      "url": "/yes-no-wheel/?tab=wheel",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Flip Coin",
+      "short_name": "Coin",
+      "url": "/yes-no-wheel/?tab=coin",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Roll Dice",
+      "short_name": "Dice",
+      "url": "/yes-no-wheel/?tab=dice",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
@@ -36,6 +56,12 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
