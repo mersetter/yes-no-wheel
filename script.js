@@ -1,7 +1,21 @@
+// Tab switching
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.section');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + '-section').classList.add('active');
+    });
+});
+
+// ========== WHEEL ==========
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 const spinBtn = document.getElementById('spinBtn');
-const resultDiv = document.getElementById('result');
+const wheelResult = document.getElementById('wheelResult');
 
 const segments = ['YES', 'NO', 'YES', 'NO', 'YES', 'NO'];
 const colors = ['#4ade80', '#f87171', '#4ade80', '#f87171', '#4ade80', '#f87171'];
@@ -18,12 +32,10 @@ const radius = Math.min(centerX, centerY) - 10;
 function drawWheel() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw wheel segments (static)
     for (let i = 0; i < numSegments; i++) {
-        const startAngle = i * segmentAngle - Math.PI / 2; // Start from top
+        const startAngle = i * segmentAngle - Math.PI / 2;
         const endAngle = startAngle + segmentAngle;
 
-        // Draw segment
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -34,7 +46,6 @@ function drawWheel() {
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Draw text
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + segmentAngle / 2);
@@ -45,7 +56,6 @@ function drawWheel() {
         ctx.restore();
     }
 
-    // Draw center circle
     ctx.beginPath();
     ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
     ctx.fillStyle = '#1a1a2e';
@@ -54,7 +64,6 @@ function drawWheel() {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Draw pointer (like clock hand)
     drawPointer();
 }
 
@@ -63,7 +72,6 @@ function drawPointer() {
     ctx.translate(centerX, centerY);
     ctx.rotate(pointerRotation);
     
-    // Pointer line
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -(radius - 40));
@@ -72,7 +80,6 @@ function drawPointer() {
     ctx.lineCap = 'round';
     ctx.stroke();
     
-    // Pointer arrow head
     ctx.beginPath();
     ctx.moveTo(0, -(radius - 20));
     ctx.lineTo(-12, -(radius - 50));
@@ -81,7 +88,6 @@ function drawPointer() {
     ctx.fillStyle = '#fff';
     ctx.fill();
     
-    // Center dot
     ctx.beginPath();
     ctx.arc(0, 0, 15, 0, 2 * Math.PI);
     ctx.fillStyle = '#667eea';
@@ -95,13 +101,11 @@ function drawPointer() {
 
 function spin() {
     if (isSpinning) return;
-    
     isSpinning = true;
     spinBtn.disabled = true;
-    resultDiv.textContent = '';
-    resultDiv.className = 'result';
+    wheelResult.textContent = '';
+    wheelResult.className = 'result';
 
-    // Random spin: 3-6 full rotations + random extra
     const spinAmount = (Math.random() * 3 + 3) * 2 * Math.PI + Math.random() * 2 * Math.PI;
     const duration = 4000 + Math.random() * 2000;
     const startTime = performance.now();
@@ -110,8 +114,6 @@ function spin() {
     function animate(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for natural slowdown
         const easeOut = 1 - Math.pow(1 - progress, 3);
         
         pointerRotation = startRotation + spinAmount * easeOut;
@@ -122,28 +124,58 @@ function spin() {
         } else {
             isSpinning = false;
             spinBtn.disabled = false;
-            showResult();
+            showWheelResult();
         }
     }
-
     requestAnimationFrame(animate);
 }
 
-function showResult() {
-    // Normalize rotation to 0-2π
+function showWheelResult() {
     let normalizedRotation = pointerRotation % (2 * Math.PI);
     if (normalizedRotation < 0) normalizedRotation += 2 * Math.PI;
-
-    // Calculate which segment the pointer is pointing at
     const segmentIndex = Math.floor(normalizedRotation / segmentAngle) % numSegments;
-    
     const result = segments[segmentIndex];
-    resultDiv.textContent = result + '!';
-    resultDiv.className = 'result ' + result.toLowerCase();
+    wheelResult.textContent = result + '!';
+    wheelResult.className = 'result ' + result.toLowerCase();
 }
 
-// Initial draw
 drawWheel();
-
-// Event listener
 spinBtn.addEventListener('click', spin);
+
+// ========== COIN ==========
+const coin = document.getElementById('coin');
+const flipBtn = document.getElementById('flipBtn');
+const coinResult = document.getElementById('coinResult');
+const coinName = document.getElementById('coinName');
+let isFlipping = false;
+
+function flip() {
+    if (isFlipping) return;
+    isFlipping = true;
+    flipBtn.disabled = true;
+    coinResult.textContent = '';
+    coinName.textContent = '';
+    
+    coin.classList.remove('show-heads', 'show-tails');
+    coin.classList.add('flipping');
+    
+    const isHeads = Math.random() < 0.5;
+    
+    setTimeout(() => {
+        coin.classList.remove('flipping');
+        coin.classList.add(isHeads ? 'show-heads' : 'show-tails');
+        
+        if (isHeads) {
+            coinResult.textContent = 'HEADS!';
+            coinName.textContent = '🇷🇺 Vladimir Putin';
+        } else {
+            coinResult.textContent = 'TAILS!';
+            coinName.textContent = '🇺🇸 Donald Trump';
+        }
+        
+        isFlipping = false;
+        flipBtn.disabled = false;
+    }, 2000);
+}
+
+flipBtn.addEventListener('click', flip);

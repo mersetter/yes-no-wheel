@@ -6,21 +6,42 @@
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Yes/No Decision Wheel</title>
+    <title>Decision App</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.svg">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
 </head>
 <body>
-    <a href="coin.html" class="nav-link">🪙 Coin</a>
     <div class="container">
-        <h1>Decision Wheel</h1>
-        <div class="wheel-container">
-            <canvas id="wheel" width="400" height="400"></canvas>
+        <div class="tabs">
+            <button class="tab active" data-tab="wheel">🎡 Wheel</button>
+            <button class="tab" data-tab="coin">🪙 Coin</button>
         </div>
-        <button id="spinBtn" class="spin-button">SPIN!</button>
-        <div id="result" class="result"></div>
+
+        <!-- Wheel Section -->
+        <div id="wheel-section" class="section active">
+            <h1>Decision Wheel</h1>
+            <div class="wheel-container">
+                <canvas id="wheel" width="400" height="400"></canvas>
+            </div>
+            <button id="spinBtn" class="spin-button">SPIN!</button>
+            <div id="wheelResult" class="result"></div>
+        </div>
+
+        <!-- Coin Section -->
+        <div id="coin-section" class="section">
+            <h1>Coin Flip</h1>
+            <div class="coin-container">
+                <div class="coin" id="coin">
+                    <div class="coin-face heads">🇷🇺</div>
+                    <div class="coin-face tails">🇺🇸</div>
+                </div>
+            </div>
+            <button id="flipBtn" class="spin-button">FLIP!</button>
+            <div id="coinResult" class="result"></div>
+            <div id="coinName" class="result-name"></div>
+        </div>
     </div>
     <script src="script.js"></script>
     <script>
