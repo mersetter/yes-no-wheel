@@ -1,11 +1,15 @@
 {
-  "name": "Yes/No Decision Wheel",
+  "name": "YesNo Wheel - Decision Maker",
   "short_name": "YesNo Wheel",
-  "description": "Spin the wheel to make a decision!",
+  "description": "Spin the wheel to make a decision! Includes coin flip, dice, random number, and more fun generators.",
+  "id": "/yes-no-wheel/",
   "start_url": "/yes-no-wheel/",
+  "scope": "/yes-no-wheel/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#1a1a2e",
   "theme_color": "#667eea",
+  "categories": ["entertainment", "games", "utilities"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -18,6 +22,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
