@@ -1,0 +1,86 @@
+{
+  "name": "YesNo Wheel - Decision Maker",
+  "short_name": "YesNo Wheel",
+  "description": "Spin the wheel to make a decision! Includes coin flip, dice, random number, and more fun generators.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#667eea",
+  "categories": [
+    "entertainment",
+    "games",
+    "utilities"
+  ],
+  "shortcuts": [
+    {
+      "name": "Spin Wheel",
+      "short_name": "Wheel",
+      "url": "./index.html?tab=wheel",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Flip Coin",
+      "short_name": "Coin",
+      "url": "./index.html?tab=coin",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Roll Dice",
+      "short_name": "Dice",
+      "url": "./index.html?tab=dice",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
